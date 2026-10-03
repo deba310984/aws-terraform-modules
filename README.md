@@ -1,40 +1,34 @@
 <div align="center">
 
-# 🧩 Reusable Terraform Modules for AWS
+# Reusable Terraform Modules for AWS
 
-### A small, composable module library — build the same network cheaply for dev and highly-available for prod from one codebase
+**A small, composable module library — build the same network cheaply for development and highly-available for production from one codebase.**
 
-[![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)](https://www.terraform.io/)
-[![AWS](https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazonwebservices&logoColor=white)](https://aws.amazon.com/)
-[![Modules](https://img.shields.io/badge/Reusable_Modules-0F9D58?style=for-the-badge&logo=terraform&logoColor=white)](#modules)
-[![CI](https://img.shields.io/badge/CI-fmt_%2B_validate-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)](.github/workflows/terraform.yml)
-
-**Thin, documented modules** · **input/output interfaces** · **dev vs prod from the same code** · **CI-validated**
+[![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=flat-square&logo=terraform&logoColor=white)](https://www.terraform.io/)
+[![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat-square&logo=amazonwebservices&logoColor=white)](https://aws.amazon.com/)
+[![Modules](https://img.shields.io/badge/reusable-modules-0f9d58?style=flat-square&logo=terraform&logoColor=white)](#modules)
+[![CI](https://img.shields.io/badge/CI-fmt_%2B_validate-2088FF?style=flat-square&logo=githubactions&logoColor=white)](.github/workflows/terraform.yml)
 
 </div>
 
 ---
 
-## 🎯 Overview
+## Overview
 
-Copy-pasting VPC and security-group blocks into every environment is how
-infrastructure code rots. This repository packages the common building blocks
-as **reusable Terraform modules** with clear interfaces, then shows the same
-modules producing a **cheap dev** network and a **highly-available prod**
-network — no duplicated resource code.
+Copy-pasting networking and security-group blocks into every environment is how
+infrastructure code rots. This repository packages the common building blocks as
+**reusable Terraform modules** with clear input/output interfaces, then demonstrates the
+same modules producing a cost-optimised **development** network and a highly-available
+**production** network — with no duplicated resource code.
 
-- 🧩 **Composable modules** — `vpc` and a rule-driven `security-group`, each doing one job well
-- ♻️ **DRY environments** — `dev` (2 AZs, 1 NAT) and `prod` (3 AZs, 1 NAT per AZ) call the *same* module
-- 🔌 **Clean interfaces** — typed variables (with `optional()` object attributes), validation, and outputs
-- ✅ **CI-validated** — GitHub Actions runs `terraform fmt -check` and `validate` on every module and config
-- 🧪 **Tested** — a native `terraform test` asserts the composed example's shape
-- 🔐 **Safe by default** — secrets and state are gitignored; SG trust is expressed by security-group reference, not IP
+The emphasis is on module design: thin, single-purpose modules; typed and validated
+inputs; composition over repetition; and continuous validation in CI.
 
-## 🗺️ Module composition
+## Module Composition
 
 ```mermaid
 flowchart TB
-    subgraph consumers["Consumers (root configs)"]
+    subgraph consumers["Consumers (root configurations)"]
         ex[examples/complete]
         dev[environments/dev]
         prod[environments/prod]
@@ -50,83 +44,95 @@ flowchart TB
     sg -. vpc_id .-> vpc
 ```
 
-## 🧩 Modules
+## Highlights
 
-| Module | Purpose | Docs |
-|--------|---------|------|
-| **`modules/vpc`** | VPC with public/private subnets across AZs, IGW, optional NAT | [README](modules/vpc/README.md) |
-| **`modules/security-group`** | One SG from a list of rules — builds any tier (ALB/app/DB) | [README](modules/security-group/README.md) |
+- **Composable modules** — a `vpc` module and a rule-driven `security-group` module, each doing one job well.
+- **DRY environments** — `dev` (2 AZs, single NAT) and `prod` (3 AZs, one NAT per AZ) consume the *same* `vpc` module with different inputs.
+- **Clean interfaces** — typed variables with `optional()` object attributes, input validation, and documented outputs.
+- **Continuously validated** — GitHub Actions runs `terraform fmt -check` and `terraform validate` on every module and configuration.
+- **Tested** — a native `terraform test` asserts the composed example's shape (subnet counts, security-group wiring).
+- **Secure by default** — state and secrets are gitignored; tier trust is expressed by security-group reference, not by IP.
 
-## ♻️ Same module, two environments
+## Modules
+
+| Module | Purpose | Documentation |
+|--------|---------|---------------|
+| [`modules/vpc`](modules/vpc) | VPC with public/private subnets across AZs, Internet Gateway, and optional NAT (single or per-AZ) | [README](modules/vpc/README.md) |
+| [`modules/security-group`](modules/security-group) | A single security group built from a list of rules — serves any tier (ALB, app, database) | [README](modules/security-group/README.md) |
+
+## One Module, Two Environments
+
+The same module code produces differently-sized, consistent stacks:
 
 ```hcl
-# environments/dev  — cheap
+# environments/dev — cost-optimised
 module "vpc" {
   source             = "../../modules/vpc"
   azs                = ["ap-south-1a", "ap-south-1b"]
-  single_nat_gateway = true     # one shared NAT
-  # ...
+  single_nat_gateway = true     # one shared NAT Gateway
 }
 
 # environments/prod — highly available
 module "vpc" {
   source             = "../../modules/vpc"
   azs                = ["ap-south-1a", "ap-south-1b", "ap-south-1c"]
-  single_nat_gateway = false    # one NAT per AZ
-  # ...
+  single_nat_gateway = false    # one NAT Gateway per AZ
 }
 ```
 
-## 📂 Repository structure
+## Repository Structure
+
 ```text
 .
 ├── modules/
-│   ├── vpc/                  # VPC, subnets, IGW, NAT, routes
+│   ├── vpc/                  # VPC, subnets, IGW, NAT, routing
 │   └── security-group/       # rule-driven security group
 ├── examples/
-│   └── complete/             # wires both modules into a two-tier network
-│       └── tests/            # native `terraform test`
+│   └── complete/             # composes both modules into a two-tier network
+│       └── tests/            # native terraform test
 ├── environments/
 │   ├── dev/                  # 2 AZs, single NAT
 │   └── prod/                 # 3 AZs, NAT per AZ
 ├── .github/workflows/        # CI: fmt + validate
-└── docs/                     # architecture + implementation notes
+└── docs/                     # architecture diagram and implementation notes
 ```
 
-## 🚀 Quick start
+## Getting Started
 
 ```bash
 git clone https://github.com/deba310984/aws-terraform-modules
 cd aws-terraform-modules/examples/complete
 
 terraform init
-terraform fmt -check -recursive
 terraform validate
-terraform plan            # preview — nothing created
-terraform apply           # creates AWS resources (paid: NAT Gateway)
+terraform plan            # preview — nothing is created
+terraform apply           # provisions AWS resources (NAT Gateway is billable)
 terraform test            # plan-time assertions
 terraform destroy         # tear down to stop charges
 ```
 
-> `plan`/`apply`/`test` need AWS credentials. `fmt`/`validate` run offline once
-> `init` has downloaded the provider.
+`plan`, `apply`, and `test` require AWS credentials; `fmt` and `validate` run offline once
+the provider is downloaded.
 
-## 🧪 Quality & CI
+## Quality & CI
 
-- `terraform fmt -check -recursive` — formatting gate
-- `terraform validate` on every module and configuration (via `init -backend=false`)
-- `examples/complete/tests/plan.tftest.hcl` — native test asserting subnet counts and SG wiring
-- All of the above run in [GitHub Actions](.github/workflows/terraform.yml) on push and PR
+Every push and pull request runs the [Terraform workflow](.github/workflows/terraform.yml):
 
-## 💰 Cost note
-The modules themselves cost nothing. Applying the example/environments creates a
-**NAT Gateway** (not free-tier, ~$0.045/hr + data) and an Elastic IP. Run
+- `terraform fmt -check -recursive` — formatting gate.
+- `terraform validate` on each module and configuration (via `init -backend=false`).
+- `examples/complete/tests/plan.tftest.hcl` — native test (run locally with `terraform test`).
+
+See the [implementation notes](docs/implementation-notes.md) for design decisions, module
+versioning, and remote-state guidance.
+
+## Cost Note
+
+The modules themselves cost nothing. Applying the example or environments creates a **NAT
+Gateway** (not free-tier, roughly `$0.045/hr` plus data) and an Elastic IP. Run
 `terraform destroy` when finished.
 
-## 💡 Skills demonstrated
+## Skills Demonstrated
 
-`Terraform modules` · `module interfaces (variables/outputs)` · `typed variables & validation` · `DRY multi-environment design` · `AWS VPC networking` · `security groups` · `CI for IaC` · `terraform test` · `remote state & module versioning (documented)`
-
-## 📚 More
-- [Implementation notes & design decisions](docs/implementation-notes.md)
-- [VPC module](modules/vpc/README.md) · [Security-group module](modules/security-group/README.md)
+Terraform module design · module interfaces (variables/outputs) · typed variables &
+validation · DRY multi-environment infrastructure · AWS VPC networking · security groups ·
+CI for infrastructure as code · `terraform test` · remote state & module versioning.
