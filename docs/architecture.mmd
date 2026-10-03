@@ -1,0 +1,21 @@
+%% Terraform module composition
+flowchart TB
+    subgraph consumers["Consumers (root configs)"]
+        ex[examples/complete]
+        dev[environments/dev]
+        prod[environments/prod]
+    end
+
+    subgraph modules["Reusable modules"]
+        vpc[module: vpc<br/>VPC, subnets, IGW, NAT, routes]
+        sg[module: security-group<br/>rule-driven SG]
+    end
+
+    ex --> vpc
+    ex --> sg
+    dev --> vpc
+    prod --> vpc
+    sg -. vpc_id .-> vpc
+
+    classDef mod fill:#eef2ff,stroke:#527fff,color:#111;
+    class vpc,sg mod;

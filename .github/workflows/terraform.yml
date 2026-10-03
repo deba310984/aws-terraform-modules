@@ -1,0 +1,29 @@
+name: Terraform
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  fmt-validate:
+    name: fmt + validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive
+
+      - name: Validate modules and configurations
+        run: |
+          for d in modules/vpc modules/security-group examples/complete environments/dev environments/prod; do
+            echo "::group::validate $d"
+            terraform -chdir="$d" init -backend=false -input=false
+            terraform -chdir="$d" validate
+            echo "::endgroup::"
+          done

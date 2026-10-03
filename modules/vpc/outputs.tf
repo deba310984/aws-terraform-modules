@@ -1,0 +1,31 @@
+# modules/vpc/outputs.tf — the module's OUTPUT interface.
+
+output "vpc_id" {
+  description = "ID of the VPC."
+  value       = aws_vpc.this.id
+}
+
+output "vpc_cidr_block" {
+  description = "CIDR block of the VPC."
+  value       = aws_vpc.this.cidr_block
+}
+
+output "public_subnet_ids" {
+  description = "IDs of the public subnets."
+  value       = aws_subnet.public[*].id
+}
+
+output "private_subnet_ids" {
+  description = "IDs of the private subnets."
+  value       = aws_subnet.private[*].id
+}
+
+output "nat_public_ips" {
+  description = "Public IP(s) of the NAT Gateway(s)."
+  value       = aws_eip.nat[*].public_ip
+}
+
+output "internet_gateway_id" {
+  description = "ID of the Internet Gateway."
+  value       = aws_internet_gateway.this.id
+}
