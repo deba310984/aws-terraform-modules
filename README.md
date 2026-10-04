@@ -9,6 +9,14 @@
 [![Modules](https://img.shields.io/badge/reusable-modules-0f9d58?style=flat-square&logo=terraform&logoColor=white)](#modules)
 [![CI](https://img.shields.io/badge/CI-fmt_%2B_validate_passing-2ea44f?style=flat-square&logo=githubactions&logoColor=white)](.github/workflows/terraform.yml)
 
+<br/>
+
+### 🎬 24-second explainer
+
+[![Watch the explainer video](media/poster.jpg)](media/explainer.mp4)
+
+*Click the image to play the video.*
+
 </div>
 
 ---
